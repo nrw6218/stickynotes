@@ -3,7 +3,8 @@
   <head>
     <title>Our simple HTTP server</title>
     <link rel="stylesheet" type="text/css" href="/style.css">
-    
+    <link href="https://fonts.googleapis.com/css?family=Permanent+Marker" rel="stylesheet">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
     <!-- script to get our new JS bundle from the server -->
     <script src="./bundle.js"></script>
@@ -11,48 +12,25 @@
   </head>
   <body>
     <section id="top">
-      <h3>Sticky Notes</h3>
-      <form id="nameForm" action="/addUser" method="post">
-        <label for="name">Name: </label>
-        <input id="nameField" type="text" name="name" />
-        <label for="age">Age: </label>
-        <input id="ageField" type="number" name="age" min="0" max="100" step="1"/>
-        <input type="submit" value="Add User" />
-      </form>
-      <form id="userForm" action="/getUsers" method="get">
-        <select id='urlField'>
-          <option value='/getUsers'>/getUsers</option>
-          <option value='/notReal'>/notReal</option>
-        </select>
-        <select id="methodSelect">
-          <option value="get">GET</option>
-          <option value="head">HEAD</option>
-        </select>
-        <input type="submit" value="Get User" />
-      </form>
+      <h3>Sticky Board</h3>
+      <button id="newNote">New Note</button>
     </section>
     <section id="content">
     </section>
     <div id="board">
-      <!-- Sticky notes will populate this area! -->
-
       <!-- Sample Sticky -->
       <div id="mydiv" number="1">
-        <!-- Include a header DIV with the same name as the draggable DIV, followed by "header" -->
         <div id="mydivheader"></div>
-        <!-- Create the editor container -->
-        <div id="editor">
-          <p>Hello World!</p>
-        </div>
+        <textarea id="editor" placeholder="Fill in your note..."></textarea>
       </div>
     </div>
     <!-- Include Quill stylesheet -->
     <link href="https://cdn.quilljs.com/1.0.0/quill.snow.css" rel="stylesheet">
     
     <!-- Include the Quill library -->
+    <!--
     <script src="https://cdn.quilljs.com/1.0.0/quill.js"></script>
-    
-    <!-- Initialize Quill editor -->
+  
     <script>
       var toolbarOptions = [
         ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
@@ -66,5 +44,6 @@
         theme: 'snow'
       });
     </script>
+    -->
   </body>
 </html>

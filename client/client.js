@@ -57,6 +57,7 @@ const sendNote = (e, note) => {
   // grab the forms action (url to go to)
   // and method (HTTP method - POST in this case)
   const noteNumber = note.getAttribute('number');
+  console.log(noteNumber);
 
   // grab the form's name and age fields so we can check user input
   const noteMessage = note.querySelector('#editor');
@@ -156,7 +157,7 @@ const init = () => {
   const userForm = document.querySelector('#userForm');
   const stickyNote = document.querySelector('#mydiv');
   const editor = document.querySelector('#editor');
-  console.dir(editor);
+  const newNoteButton = document.querySelector('#newNote');
   dragElement(stickyNote);
 
   // create handlers
@@ -165,10 +166,17 @@ const init = () => {
   const getResponses = e => requestUpdate(e, userForm);
 
   // attach submit events (for clicking submit or hitting enter)
-  editor.addEventListener('text-change', addNote);
+  editor.addEventListener('change', addNote);
   nameForm.addEventListener('submit', addUser);
   userForm.addEventListener('submit', getResponses);
+  newNoteButton.addEventListener('click', addNewNote);
 };
+
+function addNewNote() {
+  const board = document.querySelector('#board');
+  const newNote = '<div id="mydiv" number="1"><div id="mydivheader"></div><textarea id="editor" placeholder="Fill in your note..."></textarea></div>';
+  board.innerHTML += newNote;
+}
 
 function dragElement(element) {
   console.dir(element);
