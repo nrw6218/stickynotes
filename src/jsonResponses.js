@@ -57,14 +57,14 @@ const addNote = (request, response, body) => {
 
   let responseCode = 201;
 
-  if (notes[body.message]) {
+  if (notes[body.number]) {
     responseCode = 204;
   } else {
-    notes[body.message] = {};
+    notes[body.number] = {};
   }
 
-  notes[body.message].message = body.message;
-  notes[body.message].number = body.number;
+  notes[body.number].number = body.number;
+  notes[body.number].message = body.message;
 
   if (responseCode === 201) {
     responseJSON.message = `Created Note ${body.number} Successfully With Text "${body.message}"`;
