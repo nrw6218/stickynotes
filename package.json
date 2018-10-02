@@ -1,0 +1,37 @@
+{
+  "name": "http-api-assignment-ii",
+  "version": "1.0.0",
+  "description": "API Assignment #2",
+  "main": ".src/server.js",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "pretest": "eslint ./src --fix",
+    "test": "echo \"Tests complete\"",
+    "nodemon": "nodemon --watch ./src  --watch ./hosted ./src/server.js",
+    "build": "babel ./client --out-file ./hosted/bundle.js",
+    "watch": "babel --watch ./client --out-file ./hosted/bundle.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nrw6218/http-api-assignment-ii.git"
+  },
+  "author": "Nik Whiteside",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nrw6218/http-api-assignment-ii/issues"
+  },
+  "homepage": "https://github.com/nrw6218/http-api-assignment-ii#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "eslint": "^4.5.0",
+    "eslint-config-airbnb": "^15.1.0",
+    "eslint-plugin-import": "^2.7.0",
+    "nodemon": "^1.18.4"
+  },
+  "dependencies": {
+    "jquery": "^3.3.1",
+    "query-string": "^6.1.0",
+    "quill": "^1.3.6"
+  }
+}

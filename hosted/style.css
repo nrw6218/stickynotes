@@ -1,0 +1,46 @@
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #eeeeee;
+}
+
+#top {
+  text-align: center;
+  margin: 0 auto;
+}
+
+#top h1 {
+  font-size: 2em;
+}
+
+#content {
+  margin-top: 100px;
+  font-size: 2em;
+  text-align: center;
+}
+
+#mydiv {
+    position: absolute;
+    z-index: 9;
+    background-color: #F5CE53;
+    text-align: center;
+    left: calc(50% - 200px);
+}
+
+#myDiv textarea {
+  background: transparent;
+  color: black;
+}
+
+#mydivheader {
+    padding: 10px;
+    cursor: move;
+    z-index: 10;
+    background-color: #C99C00;
+}
+
+.ql-toolbar {
+  border: none;
+}
