@@ -45,12 +45,11 @@ const getNotes = (request, response) => {
 };
 
 const addNote = (request, response, body) => {
-  console.dir('ADD NOTE');
   const responseJSON = {
     message: 'invalid params',
   };
 
-  if (!body.message || !body.number) {
+  if (!body.number || body.number === null) {
     responseJSON.id = 'missingParams';
     return respondJSON(request, response, 400, responseJSON);
   }
@@ -65,6 +64,10 @@ const addNote = (request, response, body) => {
 
   notes[body.number].number = body.number;
   notes[body.number].message = body.message;
+  notes[body.number].left = body.left;
+  notes[body.number].top = body.top;
+  notes[body.number].width = body.width;
+  notes[body.number].height = body.height;
 
   if (responseCode === 201) {
     responseJSON.message = `Created Note ${body.number} Successfully With Text "${body.message}"`;

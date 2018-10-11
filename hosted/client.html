@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Our simple HTTP server</title>
+    <title>Sticky Notes</title>
     <link rel="stylesheet" type="text/css" href="/style.css">
     <link href="https://fonts.googleapis.com/css?family=Permanent+Marker" rel="stylesheet">
 
@@ -13,15 +13,15 @@
   <body>
     <section id="top">
       <h3>Sticky Board</h3>
-      <button id="newNote">New Note</button>
+      <button id="newNote">+</button>
     </section>
     <section id="content">
     </section>
     <div id="board">
       <!-- Sample Sticky -->
-      <div id="mydiv" number="1">
-        <div id="mydivheader"></div>
-        <textarea id="editor" placeholder="Fill in your note..."></textarea>
+      <div class="stickyNote" id="note1">
+        <div id="headernote1" class="header"></div>
+        <textarea class="editor" placeholder="Fill in your note..."></textarea>
       </div>
     </div>
     <!-- Include Quill stylesheet -->
