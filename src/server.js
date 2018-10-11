@@ -8,27 +8,7 @@ const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
 // handle POST requests
 const handlePost = (request, response, parsedUrl) => {
-  if (parsedUrl.pathname === '/addUser') {
-    const body = [];
-
-    request.on('error', (err) => {
-      console.dir(err);
-      response.statusCode = 400;
-      response.end();
-    });
-    request.on('data', (chunk) => {
-      body.push(chunk);
-    });
-
-    request.on('end', () => {
-      const bodyString = Buffer.concat(body).toString();
-      console.dir(bodyString);
-
-      const bodyParams = query.parse(bodyString);
-
-      jsonHandler.addUser(request, response, bodyParams);
-    });
-  } else if (parsedUrl.pathname === '/addNote') {
+  if (parsedUrl.pathname === '/addNote') {
     const body = [];
 
     request.on('error', (err) => {
@@ -76,8 +56,6 @@ const handleGet = (request, response, parsedUrl) => {
     htmlHandler.getBundle(request, response);
   } else if (parsedUrl.pathname === '/sticky.js') {
     htmlHandler.getSticky(request, response);
-  } else if (parsedUrl.pathname === '/getUsers') {
-    jsonHandler.getUsers(request, response);
   } else if (parsedUrl.pathname === '/getNotes') {
     jsonHandler.getNotes(request, response);
   } else if (parsedUrl.pathname === '/getNote') {

@@ -12,7 +12,7 @@ const parseJSON = (xhr, board, content) => {
     content.appendChild(p);
   }
 
-  // if users in response, add to screen
+  // if notes in response, add to screen
   if (obj.notes) {
     const noteList = document.createElement('p');
     for(var key in obj.notes) {
@@ -29,6 +29,7 @@ const parseJSON = (xhr, board, content) => {
           tempSticky.style.top = obj.notes[key].top;
           tempSticky.style.width = obj.notes[key].width;
           tempSticky.style.height = obj.notes[key].height;
+          tempSticky.className = obj.notes[key].className;
 
         } else {
           //otherwise, create a new note on the board
@@ -40,7 +41,7 @@ const parseJSON = (xhr, board, content) => {
           editor.value = obj.notes[key].message;
           editor.style.width = obj.notes[key].width;
           editor.style.height = obj.notes[key].height;
-          newNote.className = 'stickyNote';
+          newNote.className = obj.notes[key].className;
           newNote.id = `${obj.notes[key].number}`;
           newNote.style.left = obj.notes[key].left;
           newNote.style.top = obj.notes[key].top;
@@ -115,7 +116,7 @@ const sendNote = (e) => {
   // set our function to handle the response
   xhr.onload = () => handleResponse(xhr, true);
 
-  const formData = `number=${noteNumber}&message=${noteMessage.value}&left=${note.style.left}&top=${note.style.top}&width=${noteMessage.style.width}&height=${noteMessage.style.height}`;
+  const formData = `number=${noteNumber}&message=${noteMessage.value}&left=${note.style.left}&top=${note.style.top}&width=${noteMessage.style.width}&height=${noteMessage.style.height}&className=${note.className}`;
 
   // send our request with the data
   xhr.send(formData);
@@ -165,7 +166,6 @@ const sendPost = (e, nameForm) => {
 };
 
 const getNotes = (e) => {
-  console.dir('GET NOTES');
   return requestUpdate(e, '/getNotes', 'get')
 }
 
@@ -191,7 +191,7 @@ const requestUpdate = (e, url, type) => {
   return false;
 };
 
-function hookupNotes() {
+const hookupNotes = () => {
   stickyNotes = document.getElementsByClassName('stickyNote');
   const editors = document.getElementsByClassName('editor');
   for (var i = 0; i < stickyNotes.length; i++) {
@@ -199,6 +199,17 @@ function hookupNotes() {
     editors[i].addEventListener('input', e => sendNote(e));
   }
 };
+
+const getRandColor = () => {
+  const randColorNum = Math.floor(Math.random() * Math.floor(3));
+  if (randColorNum === 0) {
+    return 'blueSticky';
+  } else if (randColorNum === 1) {
+    return 'pinkSticky';
+  } else {
+    return 'yellowSticky';
+  }
+}
 
 const init = () => {
   const newNoteButton = document.querySelector('#newNote');
@@ -212,22 +223,25 @@ const init = () => {
   // attach submit events (for clicking submit or hitting enter)
   newNoteButton.addEventListener('click', addNewNote);
   newNoteButton.addEventListener('click', notesResponse);
+  newNoteButton.className = getRandColor();
   notesResponse();
   setInterval(notesResponse, 10000);
 };
 
-function addNewNote() {
+const addNewNote = (e) => {
   const board = document.querySelector('#board');
-  const newNote = `<div class="stickyNote" id="note${document.getElementsByClassName('stickyNote').length+1}"><div id="headernote${document.getElementsByClassName('stickyNote').length+1}" class="header"></div><textarea class="editor" placeholder="Fill in your note..."></textarea></div>`;
+  const newNote = `<div class="stickyNote ${e.target.className}" id="note${document.getElementsByClassName('stickyNote').length+1}"><div id="headernote${document.getElementsByClassName('stickyNote').length+1}" class="header"></div><textarea class="editor" placeholder="Fill in your note..."></textarea></div>`;
   board.innerHTML += newNote;
   hookupNotes();
+
+  //Generate a new random color for the next sticky note
+  e.target.className = getRandColor();
 }
 
 function dragElement(element) {
   if (element) {
     let pos1 = 0; let pos2 = 0;
     let pos3 = 0; let pos4 = 0;
-    console.dir(`header${element.id}`);
     if (document.getElementById(`header${element.id}`)) {
       // if present, the header is where you move the DIV from:
       document.getElementById(`header${element.id}`).onmousedown = dragMouseDown;

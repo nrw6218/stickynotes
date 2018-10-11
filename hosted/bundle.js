@@ -14,7 +14,7 @@ var parseJSON = function parseJSON(xhr, board, content) {
     content.appendChild(p);
   }
 
-  // if users in response, add to screen
+  // if notes in response, add to screen
   if (obj.notes) {
     var noteList = document.createElement('p');
     for (var key in obj.notes) {
@@ -31,6 +31,7 @@ var parseJSON = function parseJSON(xhr, board, content) {
           tempSticky.style.top = obj.notes[key].top;
           tempSticky.style.width = obj.notes[key].width;
           tempSticky.style.height = obj.notes[key].height;
+          tempSticky.className = obj.notes[key].className;
         } else {
           //otherwise, create a new note on the board
           var newNote = document.createElement('div');
@@ -41,7 +42,7 @@ var parseJSON = function parseJSON(xhr, board, content) {
           _editor.value = obj.notes[key].message;
           _editor.style.width = obj.notes[key].width;
           _editor.style.height = obj.notes[key].height;
-          newNote.className = 'stickyNote';
+          newNote.className = obj.notes[key].className;
           newNote.id = '' + obj.notes[key].number;
           newNote.style.left = obj.notes[key].left;
           newNote.style.top = obj.notes[key].top;
@@ -124,7 +125,7 @@ var sendNote = function sendNote(e) {
     return handleResponse(xhr, true);
   };
 
-  var formData = 'number=' + noteNumber + '&message=' + noteMessage.value + '&left=' + note.style.left + '&top=' + note.style.top + '&width=' + noteMessage.style.width + '&height=' + noteMessage.style.height;
+  var formData = 'number=' + noteNumber + '&message=' + noteMessage.value + '&left=' + note.style.left + '&top=' + note.style.top + '&width=' + noteMessage.style.width + '&height=' + noteMessage.style.height + '&className=' + note.className;
 
   // send our request with the data
   xhr.send(formData);
@@ -176,7 +177,6 @@ var sendPost = function sendPost(e, nameForm) {
 };
 
 var getNotes = function getNotes(e) {
-  console.dir('GET NOTES');
   return requestUpdate(e, '/getNotes', 'get');
 };
 
@@ -206,7 +206,7 @@ var requestUpdate = function requestUpdate(e, url, type) {
   return false;
 };
 
-function hookupNotes() {
+var hookupNotes = function hookupNotes() {
   stickyNotes = document.getElementsByClassName('stickyNote');
   var editors = document.getElementsByClassName('editor');
   for (var i = 0; i < stickyNotes.length; i++) {
@@ -214,6 +214,17 @@ function hookupNotes() {
     editors[i].addEventListener('input', function (e) {
       return sendNote(e);
     });
+  }
+};
+
+var getRandColor = function getRandColor() {
+  var randColorNum = Math.floor(Math.random() * Math.floor(3));
+  if (randColorNum === 0) {
+    return 'blueSticky';
+  } else if (randColorNum === 1) {
+    return 'pinkSticky';
+  } else {
+    return 'yellowSticky';
   }
 };
 
@@ -231,16 +242,20 @@ var init = function init() {
   // attach submit events (for clicking submit or hitting enter)
   newNoteButton.addEventListener('click', addNewNote);
   newNoteButton.addEventListener('click', notesResponse);
+  newNoteButton.className = getRandColor();
   notesResponse();
   setInterval(notesResponse, 10000);
 };
 
-function addNewNote() {
+var addNewNote = function addNewNote(e) {
   var board = document.querySelector('#board');
-  var newNote = '<div class="stickyNote" id="note' + (document.getElementsByClassName('stickyNote').length + 1) + '"><div id="headernote' + (document.getElementsByClassName('stickyNote').length + 1) + '" class="header"></div><textarea class="editor" placeholder="Fill in your note..."></textarea></div>';
+  var newNote = '<div class="stickyNote ' + e.target.className + '" id="note' + (document.getElementsByClassName('stickyNote').length + 1) + '"><div id="headernote' + (document.getElementsByClassName('stickyNote').length + 1) + '" class="header"></div><textarea class="editor" placeholder="Fill in your note..."></textarea></div>';
   board.innerHTML += newNote;
   hookupNotes();
-}
+
+  //Generate a new random color for the next sticky note
+  e.target.className = getRandColor();
+};
 
 function dragElement(element) {
   if (element) {
@@ -279,7 +294,6 @@ function dragElement(element) {
 
     var pos1 = 0;var pos2 = 0;
     var pos3 = 0;var pos4 = 0;
-    console.dir('header' + element.id);
     if (document.getElementById('header' + element.id)) {
       // if present, the header is where you move the DIV from:
       document.getElementById('header' + element.id).onmousedown = dragMouseDown;

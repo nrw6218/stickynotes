@@ -85,16 +85,51 @@ h3 {
   z-index: 10;
 }
 
-#newNote:hover {
+#newNote.yellowSticky:hover {
   background-color: #cccc00;
+}
+
+#newNote.pinkSticky:hover {
+  background-color: #ff6666;
+}
+
+#newNote.blueSticky:hover {
+  background-color: #99ccff;
+}
+
+#newNote:hover {
   color: #d8d8d8;
   cursor: pointer;
+}
+
+/* Sticky Colors */
+.yellowSticky {
+  background-color: #f5ce53;
+}
+
+.yellowSticky .header {
+  background-color: #c99c00;
+}
+
+.blueSticky {
+  background-color: #99ccff;
+}
+
+.blueSticky .header {
+  background-color: #004080;
+}
+
+.pinkSticky {
+  background-color: #ff6666;
+}
+
+.pinkSticky .header {
+  background-color: #ff4d4d;
 }
 
 .stickyNote {
     position: absolute;
     z-index: 9;
-    background-color: #F5CE53;
     text-align: center;
     left: calc(50% - 50px);
     top: calc(50% - 50px);
@@ -109,7 +144,6 @@ h3 {
     padding: 10px;
     cursor: move;
     z-index: 10;
-    background-color: #C99C00;
 }
 
 .editor {

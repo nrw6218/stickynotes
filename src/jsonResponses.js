@@ -74,6 +74,7 @@ const addNote = (request, response, body) => {
   notes[body.number].top = body.top;
   notes[body.number].width = body.width;
   notes[body.number].height = body.height;
+  notes[body.number].className = body.className;
 
   if (responseCode === 201) {
     responseJSON.message = `Created Note ${body.number} Successfully With Text "${body.message}"`;
