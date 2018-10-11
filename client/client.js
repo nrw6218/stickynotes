@@ -87,13 +87,14 @@ const handleResponse = (xhr, parseResponse) => {
 
 // function to send our post request
 const sendNote = (e) => {
-  // grab the forms action (url to go to)
-  // and method (HTTP method - POST in this case)
   const note = e.target.parentElement;
-  const noteNumber = note.getAttribute('id');
+  // don't bother calling the server if the object is null
+  if(note === null) {
+    return false;
+  }
 
-  // don't bother calling the server if the number
-  // is invalid
+  const noteNumber = note.getAttribute('id');
+  // don't bother calling the server if the number is null
   if(noteNumber === null) {
     return false;
   }
