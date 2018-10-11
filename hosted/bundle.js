@@ -29,8 +29,6 @@ var parseJSON = function parseJSON(xhr, board, content) {
           editor.style.height = obj.notes[key].height;
           tempSticky.style.left = obj.notes[key].left;
           tempSticky.style.top = obj.notes[key].top;
-          tempSticky.style.width = obj.notes[key].width;
-          tempSticky.style.height = obj.notes[key].height;
           tempSticky.className = obj.notes[key].className;
         } else {
           //otherwise, create a new note on the board
