@@ -1,8 +1,3 @@
-// Note this object is purely in memory
-// When node shuts down this will be cleared.
-// Same when your heroku app shuts down from inactivity
-// We will be working with databases in the next few weeks.
-const users = {};
 const notes = {};
 
 const respondJSON = (request, response, status, object) => {
@@ -14,20 +9,6 @@ const respondJSON = (request, response, status, object) => {
 const respondJSONMeta = (request, response, status) => {
   response.writeHead(status, { 'Content-Type': 'application/json' });
   response.end();
-};
-
-const getUsers = (request, response) => {
-  if (request.method === 'GET') {
-    // if it is a GET request
-    const responseJSON = {
-      users,
-    };
-
-    respondJSON(request, response, 200, responseJSON);
-  } else {
-    // if it is a HEAD request
-    respondJSONMeta(request, response, 200);
-  }
 };
 
 const getNotes = (request, response) => {
@@ -42,6 +23,31 @@ const getNotes = (request, response) => {
     // if it is a HEAD request
     respondJSONMeta(request, response, 200);
   }
+};
+
+// get individual note
+const getNote = (request, response, queryParams) => {
+  let responseMessage = 'Missing number query parameter.';
+  let responseCode = 401;
+
+  if (queryParams.number) {
+    if (notes[queryParams.number]) {
+      responseMessage = notes[queryParams.number];
+      responseCode = 200;
+    } else {
+      responseMessage = `Note ${queryParams.number} does not exist.`;
+      responseCode = 404;
+    }
+  }
+
+  // create success message for response
+  const responseJSON = {
+    message: responseMessage,
+  };
+
+  if (responseCode === 401) responseJSON.id = 'unauthorized';
+
+  return respondJSON(request, response, responseCode, responseJSON);
 };
 
 const addNote = (request, response, body) => {
@@ -77,35 +83,6 @@ const addNote = (request, response, body) => {
   return respondJSONMeta(request, response, responseCode);
 };
 
-const addUser = (request, response, body) => {
-  const responseJSON = {
-    message: 'Name and age are both required',
-  };
-
-  if (!body.name || !body.age) {
-    responseJSON.id = 'missingParams';
-    return respondJSON(request, response, 400, responseJSON);
-  }
-
-  let responseCode = 201;
-
-  if (users[body.name]) {
-    responseCode = 204;
-  } else {
-    users[body.name] = {};
-  }
-
-  users[body.name].name = body.name;
-  users[body.name].age = body.age;
-
-  if (responseCode === 201) {
-    responseJSON.message = 'Created Successfully';
-    return respondJSON(request, response, responseCode, responseJSON);
-  }
-
-  return respondJSONMeta(request, response, responseCode);
-};
-
 const notReal = (request, response) => {
   if (request.method === 'GET') {
     // if it is a GET request
@@ -122,9 +99,8 @@ const notReal = (request, response) => {
 };
 
 module.exports = {
-  getUsers,
   getNotes,
-  addUser,
+  getNote,
   addNote,
   notReal,
 };

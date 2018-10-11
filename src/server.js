@@ -53,8 +53,8 @@ const handlePost = (request, response, parsedUrl) => {
 
 const handleHead = (request, response, parsedUrl) => {
   // route to correct method based on url
-  if (parsedUrl.pathname === '/getUsers') {
-    jsonHandler.getUsers(request, response);
+  if (parsedUrl.pathname === '/getNotes') {
+    jsonHandler.getNotes(request, response);
   } else if (parsedUrl.pathname === '/notReal') {
     jsonHandler.notReal(request, response);
   }
@@ -62,6 +62,11 @@ const handleHead = (request, response, parsedUrl) => {
 
 // handle GET requests
 const handleGet = (request, response, parsedUrl) => {
+  console.log(parsedUrl);
+  // grab any query parameters
+  const params = query.parse(parsedUrl.query);
+  console.log(params);
+
   // route to correct method based on url
   if (parsedUrl.pathname === '/') {
     htmlHandler.getIndex(request, response);
@@ -75,6 +80,8 @@ const handleGet = (request, response, parsedUrl) => {
     jsonHandler.getUsers(request, response);
   } else if (parsedUrl.pathname === '/getNotes') {
     jsonHandler.getNotes(request, response);
+  } else if (parsedUrl.pathname === '/getNote') {
+    jsonHandler.getNote(request, response, params);
   } else {
     jsonHandler.notReal(request, response);
   }
