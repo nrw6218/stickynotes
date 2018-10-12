@@ -65,6 +65,7 @@ var handleResponse = function handleResponse(xhr, parseResponse) {
   var content = document.querySelector('#content');
   var board = document.querySelector('#board');
   var login = document.querySelector('#login');
+  var loginButton = login.querySelector('#nameSubmit');
 
   content.style.color = 'black';
 
@@ -80,7 +81,7 @@ var handleResponse = function handleResponse(xhr, parseResponse) {
       if (login.style.display != 'none') {
         content.innerHTML = '';
         login.style.display = 'none';
-        login.disabled = true;
+        loginButton.disabled = true;
       } else {
         content.innerHTML = "<b>Note Created at " + new Date().toLocaleTimeString() + "</b>";
       }
@@ -323,7 +324,7 @@ var addNewNote = function addNewNote(e) {
   e.target.className = getRandColor();
 };
 
-function dragElement(element) {
+var dragElement = function dragElement(element) {
   if (element) {
     var dragMouseDown = function dragMouseDown(e) {
       e = e || window.event;
@@ -369,6 +370,6 @@ function dragElement(element) {
       console.dir('ERROR');
     }
   }
-}
+};
 
 window.onload = init;

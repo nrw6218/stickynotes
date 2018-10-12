@@ -24,7 +24,7 @@ const parseJSON = (xhr, board, content) => {
       noteObj = obj.filteredNotes;
     }
 
-    for(var key in noteObj) {
+    for(let key in noteObj) {
       //If this is a null note, move on
       if(noteObj[key] != null) {
         // if the note already exists, just update it
@@ -215,7 +215,7 @@ const requestUpdate = (e, url, type) => {
 const hookupNotes = () => {
   stickyNotes = document.getElementsByClassName('stickyNote');
   const editors = document.getElementsByClassName('editor');
-  for (var i = 0; i < stickyNotes.length; i++) {
+  for (let i = 0; i < stickyNotes.length; i++) {
     dragElement(stickyNotes[i]);
     editors[i].addEventListener('input', e => sendNote(e));
   }
@@ -305,7 +305,7 @@ const addNewNote = (e) => {
   e.target.className = getRandColor();
 }
 
-function dragElement(element) {
+const dragElement = (element) => {
   if (element) {
     let pos1 = 0; let pos2 = 0;
     let pos3 = 0; let pos4 = 0;

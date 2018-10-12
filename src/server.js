@@ -70,8 +70,6 @@ const handleGet = (request, response, parsedUrl) => {
     htmlHandler.getCSS(request, response);
   } else if (parsedUrl.pathname === '/bundle.js') {
     htmlHandler.getBundle(request, response);
-  } else if (parsedUrl.pathname === '/sticky.js') {
-    htmlHandler.getSticky(request, response);
   } else if (parsedUrl.pathname === '/getNotes') {
     jsonHandler.getNotes(request, response, params);
   } else if (parsedUrl.pathname === '/getNote') {
