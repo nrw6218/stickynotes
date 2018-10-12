@@ -1,48 +1,57 @@
 let stickyNotes = [];
+let userName = "";
+let filterName = "";
 
 // function to parse our response
 const parseJSON = (xhr, board, content) => {
 // parse response (obj will be empty in a 204 updated)
   const obj = JSON.parse(xhr.response);
 
-  // if message in response, add to screen
+  // if message in response, add to content
   if (obj.message) {
     const p = document.createElement('p');
     p.textContent = obj.message;
     content.appendChild(p);
   }
 
-  // if notes in response, add to screen
-  if (obj.notes) {
+  // if notes in response, add to board
+  if (obj.notes || obj.filteredNotes) {
     const noteList = document.createElement('p');
-    for(var key in obj.notes) {
+    let noteObj = {};
+    if (obj.notes) {
+      noteObj = obj.notes;
+    } else {
+      noteObj = obj.filteredNotes;
+    }
+
+    for(var key in noteObj) {
       //If this is a null note, move on
-      if(obj.notes[key] != null) {
+      if(noteObj[key] != null) {
         // if the note already exists, just update it
-        let tempSticky = board.querySelector(`#${obj.notes[key].number}`);
+        let tempSticky = board.querySelector(`#${noteObj[key].number}`);
         if(tempSticky) {
           const editor = tempSticky.querySelector('.editor');
-          editor.value = obj.notes[key].message;
-          editor.style.width = obj.notes[key].width;
-          editor.style.height = obj.notes[key].height;
-          tempSticky.style.left = obj.notes[key].left;
-          tempSticky.style.top = obj.notes[key].top;
-          tempSticky.className = obj.notes[key].className;
+          editor.value = noteObj[key].message;
+          editor.style.width = noteObj[key].width;
+          editor.style.height = noteObj[key].height;
+          tempSticky.style.left = noteObj[key].left;
+          tempSticky.style.top = noteObj[key].top;
+          tempSticky.className = noteObj[key].className;
 
         } else {
           //otherwise, create a new note on the board
           const newNote = document.createElement('div');
-          newNote.innerHTML += `<div id="header${obj.notes[key].number}" class="header"></div>`;
+          newNote.innerHTML += `<div id="header${noteObj[key].number}" class="header"></div>`;
           newNote.innerHTML += `<textarea class="editor" placeholder="Fill in your note..."></textarea>`;
           board.appendChild(newNote);
           const editor = newNote.querySelector('.editor');
-          editor.value = obj.notes[key].message;
-          editor.style.width = obj.notes[key].width;
-          editor.style.height = obj.notes[key].height;
-          newNote.className = obj.notes[key].className;
-          newNote.id = `${obj.notes[key].number}`;
-          newNote.style.left = obj.notes[key].left;
-          newNote.style.top = obj.notes[key].top;
+          editor.value = noteObj[key].message;
+          editor.style.width = noteObj[key].width;
+          editor.style.height = noteObj[key].height;
+          newNote.className = noteObj[key].className;
+          newNote.id = `${noteObj[key].number}`;
+          newNote.style.left = noteObj[key].left;
+          newNote.style.top = noteObj[key].top;
         }
       }
     }
@@ -54,25 +63,43 @@ const parseJSON = (xhr, board, content) => {
 const handleResponse = (xhr, parseResponse) => {
   const content = document.querySelector('#content');
   const board = document.querySelector('#board');
+  const login = document.querySelector('#login');
 
-  // check the status code
+  content.style.color = 'black';
+
+  // check the status code - check if you are responding to a user name
+  // or to a note request
   switch (xhr.status) {
     case 200: // success
       content.innerHTML = `<b>Updated at ${new Date().toLocaleTimeString()}</b>`;
       break;
     case 201: // created
-      content.innerHTML = `<b>Note Created at ${new Date().toLocaleTimeString()}</b>`;
+      if(login.style.display != 'none') {
+        content.innerHTML = '';
+        login.style.display = 'none';
+        login.disabled = true;
+      } else {
+        content.innerHTML = `<b>Note Created at ${new Date().toLocaleTimeString()}</b>`;
+      }
       break;
     case 204: // updated (no response back from server)
-      content.innerHTML = `<b>Saved at ${new Date().toLocaleTimeString()}</b>`;
-      return;
+      if(login.style.display != 'none') {
+        content.style.color = 'red';
+        content.innerHTML = `<b>That name is already taken - try entering a different name.</b>`;
+      } else {
+        content.innerHTML = `<b>Saved at ${new Date().toLocaleTimeString()}</b>`;
+      }
+      break;
     case 400: // bad request
+      content.style.color = 'red';
       content.innerHTML = '<b>Bad Request</b>';
       break;
     case 404: // not found
+      content.style.color = 'red';
       content.innerHTML = '<b>Resource Not Found</b>';
       break;
     default: // any other status code
+      content.style.color = 'red';
       content.innerHTML = 'Error code not implemented by client.';
       break;
   }
@@ -83,7 +110,7 @@ const handleResponse = (xhr, parseResponse) => {
   }
 };
 
-// function to send our post request
+// function to send our post request to add a node to the server
 const sendNote = (e) => {
   const note = e.target.parentElement;
   // don't bother calling the server if the object is null
@@ -105,17 +132,14 @@ const sendNote = (e) => {
   // set the method (POST) and url (action field from form)
   xhr.open('post', '/addNote');
 
-  // set our request type to x-www-form-urlencoded
-  // which is one of the common types of form data.
-  // This type has the same format as query strings key=value&key2=value2
   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
   // set our requested response type in hopes of a JSON response
   xhr.setRequestHeader('Accept', 'application/json');
 
   // set our function to handle the response
-  xhr.onload = () => handleResponse(xhr, true);
+  xhr.onload = () => handleResponse(xhr, false);
 
-  const formData = `number=${noteNumber}&message=${noteMessage.value}&left=${note.style.left}&top=${note.style.top}&width=${noteMessage.style.width}&height=${noteMessage.style.height}&className=${note.className}`;
+  const formData = `number=${noteNumber}&message=${noteMessage.value}&left=${note.style.left}&top=${note.style.top}&width=${noteMessage.style.width}&height=${noteMessage.style.height}&className=${note.className}&owner=${userName}`;
 
   // send our request with the data
   xhr.send(formData);
@@ -127,33 +151,24 @@ const sendNote = (e) => {
   return false;
 };
 
-// function to send our post request
-const sendPost = (e, nameForm) => {
-  // grab the forms action (url to go to)
-  // and method (HTTP method - POST in this case)
+// function to send our request to add a new username
+const sendUserPost = (e, nameForm, hiddenElement) => {
   const nameAction = nameForm.getAttribute('action');
   const nameMethod = nameForm.getAttribute('method');
 
-  // grab the form's name and age fields so we can check user input
   const nameField = nameForm.querySelector('#nameField');
-  const ageField = nameForm.querySelector('#ageField');
 
-  // create a new Ajax request (remember this is asynchronous)
   const xhr = new XMLHttpRequest();
-  // set the method (POST) and url (action field from form)
   xhr.open(nameMethod, nameAction);
 
-  // set our request type to x-www-form-urlencoded
-  // which is one of the common types of form data.
-  // This type has the same format as query strings key=value&key2=value2
   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-  // set our requested response type in hopes of a JSON response
   xhr.setRequestHeader('Accept', 'application/json');
 
   // set our function to handle the response
   xhr.onload = () => handleResponse(xhr, true);
 
-  const formData = `name=${nameField.value}&age=${ageField.value}`;
+  const formData = `userName=${nameField.value}`;
+  userName = nameField.value;
 
   // send our request with the data
   xhr.send(formData);
@@ -162,10 +177,15 @@ const sendPost = (e, nameForm) => {
   e.preventDefault();
   // return false to prevent the browser from trying to change page
   return false;
-};
+}
 
+// requests a note update depending on the filter requirements
 const getNotes = (e) => {
-  return requestUpdate(e, '/getNotes', 'get')
+  if (filterName != '') {
+    return requestUpdate(e, `/getNotes?owner=${filterName}`, 'get');
+  } else {
+    return requestUpdate(e, '/getNotes', 'get');
+  }
 }
 
 // function to send request
@@ -190,6 +210,7 @@ const requestUpdate = (e, url, type) => {
   return false;
 };
 
+// set up all notes with the proper event handlers
 const hookupNotes = () => {
   stickyNotes = document.getElementsByClassName('stickyNote');
   const editors = document.getElementsByClassName('editor');
@@ -199,6 +220,14 @@ const hookupNotes = () => {
   }
 };
 
+// wipe all sticky notes from the client view
+const wipeBoard = () => {
+  const board = document.querySelector('#board');
+  board.innerHTML = '';
+  stickyNotes = [];
+}
+
+// return a random string value that corresponds to a sticky color pallete
 const getRandColor = () => {
   const randColorNum = Math.floor(Math.random() * Math.floor(3));
   if (randColorNum === 0) {
@@ -211,17 +240,55 @@ const getRandColor = () => {
 }
 
 const init = () => {
+  // find all required form elements
   const newNoteButton = document.querySelector('#newNote');
+  const nameForm = document.querySelector('#nameForm');
+  const filterOwnerField = document.querySelector('#ownerField');
+  const filterCheck = document.querySelector('#filterCheck');
+  const loginSection = document.querySelector('#login');
 
-  // set up notes
+  // Set up notes
   hookupNotes();
 
-  // create handlers
-  const notesResponse = e => getNotes(e);
+  // Create handlers
+  const notesResponse = (e) => getNotes(e);
+  const addUser = (e) => {
+    sendUserPost(e, nameForm, loginSection);
+  }
+  const filterResponse = (e) => {
+    // check if the filter is checked on and update the filter
+    // name appropriately
+    if (filterCheck.checked === true) {
+      wipeBoard();
+      filterName = filterOwnerField.value;
+      if(filterName != userName) {
+        newNoteButton.disabled = true;
+      }
+    } else {
+      newNoteButton.disabled = false;
+      filterName = "";
+    }
+    getNotes(null);
+  }
+  const reloadFilter = (e) => {
+    // if the filter is enabled, wipe the board, change the name
+    // and reload automatically
+    if(filterCheck.checked) {
+      wipeBoard();
+      filterName = filterOwnerField.value;
+      if (filterName != userName) newNoteButton.disabled = true;
+      getNotes(null);
+    }
+  }
 
-  // attach submit events (for clicking submit or hitting enter)
+  // Attach events to new note button and beginning user input
+  nameForm.addEventListener('submit', addUser);
   newNoteButton.addEventListener('click', addNewNote);
   newNoteButton.addEventListener('click', notesResponse);
+  filterCheck.addEventListener('click', filterResponse);
+  filterOwnerField.addEventListener('change', reloadFilter);
+
+  // Choose a random color for the newNoteButton
   newNoteButton.className = getRandColor();
   notesResponse();
   setInterval(notesResponse, 10000);

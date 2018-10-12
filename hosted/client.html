@@ -11,6 +11,20 @@
     <script src="./sticky.js"></script>
   </head>
   <body>
+    <section id="login">
+        <form id="nameForm" action="/addUser" method="post">
+          <label for="userName">What's your name?</label>
+          <input id="nameField" type="text" name="userName" />
+          <input type="submit" value="Add User" />
+        </form>
+    </section>
+    <section id="filter">
+      <form id="filterForm" action="/addUser" method="post">
+        <label for="userName">Filter by Owner</label>
+        <input id="ownerField" type="text" name="owner" />
+        <input id="filterCheck" type="checkbox" name="filterCheck" value="Filter User">Filter <br>
+      </form>
+  </section>
     <section id="top">
       <h3>Sticky Board</h3>
       <button id="newNote">+</button>
@@ -24,26 +38,5 @@
         <textarea class="editor" placeholder="Fill in your note..."></textarea>
       </div>
     </div>
-    <!-- Include Quill stylesheet -->
-    <link href="https://cdn.quilljs.com/1.0.0/quill.snow.css" rel="stylesheet">
-    
-    <!-- Include the Quill library -->
-    <!--
-    <script src="https://cdn.quilljs.com/1.0.0/quill.js"></script>
-  
-    <script>
-      var toolbarOptions = [
-        ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
-        [{ 'header': 1 }, { 'header': 2 }],               // custom button values
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-        [{ 'color': [] }],          // dropdown with defaults from theme
-      ];
-
-      var editor = new Quill('#editor', {
-        modules: { toolbar: toolbarOptions },
-        theme: 'snow'
-      });
-    </script>
-    -->
   </body>
 </html>

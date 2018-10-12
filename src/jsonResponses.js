@@ -1,4 +1,5 @@
 const notes = {};
+const users = {};
 
 const respondJSON = (request, response, status, object) => {
   response.writeHead(status, { 'Content-Type': 'application/json' });
@@ -11,11 +12,11 @@ const respondJSONMeta = (request, response, status) => {
   response.end();
 };
 
-const getNotes = (request, response) => {
+const getUsers = (request, response) => {
   if (request.method === 'GET') {
     // if it is a GET request
     const responseJSON = {
-      notes,
+      users,
     };
 
     respondJSON(request, response, 200, responseJSON);
@@ -25,12 +26,41 @@ const getNotes = (request, response) => {
   }
 };
 
+const getNotes = (request, response, queryParams) => {
+  // if it is a GET request
+  if (request.method === 'GET') {
+    // go through filtering options
+    if (queryParams && queryParams.owner) {
+      const filteredNotes = {};
+      const vals = Object.values(notes);
+      for (let i = 0; i < vals.length; i++) {
+        if (vals[i].owner === queryParams.owner) {
+          filteredNotes[i] = vals[i];
+        }
+      }
+      const responseJSON = {
+        filteredNotes,
+      };
+      return respondJSON(request, response, 200, responseJSON);
+    }
+
+    // standard option to get all notes
+    const responseJSON = {
+      notes,
+    };
+
+    return respondJSON(request, response, 200, responseJSON);
+  }
+  // if it is a HEAD request
+  return respondJSONMeta(request, response, 200);
+};
+
 // get individual note
 const getNote = (request, response, queryParams) => {
   let responseMessage = 'Missing number query parameter.';
   let responseCode = 401;
 
-  if (queryParams.number) {
+  if (queryParams && queryParams.number) {
     if (notes[queryParams.number]) {
       responseMessage = notes[queryParams.number];
       responseCode = 200;
@@ -48,6 +78,34 @@ const getNote = (request, response, queryParams) => {
   if (responseCode === 401) responseJSON.id = 'unauthorized';
 
   return respondJSON(request, response, responseCode, responseJSON);
+};
+
+const addUser = (request, response, body) => {
+  const responseJSON = {
+    message: 'Missing name.',
+  };
+
+  if (body.userName === null || body.userName === '') {
+    responseJSON.id = 'missingParams';
+    return respondJSON(request, response, 400, responseJSON);
+  }
+
+  let responseCode = 201;
+
+  if (users[body.userName]) {
+    responseCode = 204;
+  } else {
+    users[body.userName] = {};
+  }
+
+  users[body.userName].userName = body.userName;
+
+  if (responseCode === 201) {
+    responseJSON.message = `Welcome ${body.userName}`;
+    return respondJSON(request, response, responseCode, responseJSON);
+  }
+
+  return respondJSONMeta(request, response, responseCode);
 };
 
 const addNote = (request, response, body) => {
@@ -75,6 +133,7 @@ const addNote = (request, response, body) => {
   notes[body.number].width = body.width;
   notes[body.number].height = body.height;
   notes[body.number].className = body.className;
+  notes[body.number].owner = body.owner;
 
   if (responseCode === 201) {
     responseJSON.message = `Created Note ${body.number} Successfully With Text "${body.message}"`;
@@ -100,8 +159,10 @@ const notReal = (request, response) => {
 };
 
 module.exports = {
+  getUsers,
   getNotes,
   getNote,
   addNote,
+  addUser,
   notReal,
 };

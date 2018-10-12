@@ -1,49 +1,58 @@
-'use strict';
+"use strict";
 
 var stickyNotes = [];
+var userName = "";
+var filterName = "";
 
 // function to parse our response
 var parseJSON = function parseJSON(xhr, board, content) {
   // parse response (obj will be empty in a 204 updated)
   var obj = JSON.parse(xhr.response);
 
-  // if message in response, add to screen
+  // if message in response, add to content
   if (obj.message) {
     var p = document.createElement('p');
     p.textContent = obj.message;
     content.appendChild(p);
   }
 
-  // if notes in response, add to screen
-  if (obj.notes) {
+  // if notes in response, add to board
+  if (obj.notes || obj.filteredNotes) {
     var noteList = document.createElement('p');
-    for (var key in obj.notes) {
+    var noteObj = {};
+    if (obj.notes) {
+      noteObj = obj.notes;
+    } else {
+      noteObj = obj.filteredNotes;
+    }
+
+    for (var key in noteObj) {
       //If this is a null note, move on
-      if (obj.notes[key] != null) {
+      if (noteObj[key] != null) {
         // if the note already exists, just update it
-        var tempSticky = board.querySelector('#' + obj.notes[key].number);
+        var tempSticky = board.querySelector("#" + noteObj[key].number);
         if (tempSticky) {
           var editor = tempSticky.querySelector('.editor');
-          editor.value = obj.notes[key].message;
-          editor.style.width = obj.notes[key].width;
-          editor.style.height = obj.notes[key].height;
-          tempSticky.style.left = obj.notes[key].left;
-          tempSticky.style.top = obj.notes[key].top;
-          tempSticky.className = obj.notes[key].className;
+          editor.value = noteObj[key].message;
+          editor.style.width = noteObj[key].width;
+          editor.style.height = noteObj[key].height;
+          tempSticky.style.left = noteObj[key].left;
+          tempSticky.style.top = noteObj[key].top;
+          tempSticky.className = noteObj[key].className;
         } else {
           //otherwise, create a new note on the board
           var newNote = document.createElement('div');
-          newNote.innerHTML += '<div id="header' + obj.notes[key].number + '" class="header"></div>';
-          newNote.innerHTML += '<textarea class="editor" placeholder="Fill in your note..."></textarea>';
+          newNote.innerHTML += "<div id=\"header" + noteObj[key].number + "\" class=\"header\"></div>";
+          newNote.innerHTML += "<textarea class=\"editor\" placeholder=\"Fill in your note...\"></textarea>";
           board.appendChild(newNote);
           var _editor = newNote.querySelector('.editor');
-          _editor.value = obj.notes[key].message;
-          _editor.style.width = obj.notes[key].width;
-          _editor.style.height = obj.notes[key].height;
-          newNote.className = obj.notes[key].className;
-          newNote.id = '' + obj.notes[key].number;
-          newNote.style.left = obj.notes[key].left;
-          newNote.style.top = obj.notes[key].top;
+          _editor.value = noteObj[key].message;
+          _editor.style.width = noteObj[key].width;
+          _editor.style.height = noteObj[key].height;
+          newNote.className = noteObj[key].className;
+          newNote.id = "" + noteObj[key].number;
+          newNote.style.left = noteObj[key].left;
+          newNote.style.top = noteObj[key].top;
         }
       }
     }
@@ -55,31 +64,49 @@ var parseJSON = function parseJSON(xhr, board, content) {
 var handleResponse = function handleResponse(xhr, parseResponse) {
   var content = document.querySelector('#content');
   var board = document.querySelector('#board');
+  var login = document.querySelector('#login');
 
-  // check the status code
+  content.style.color = 'black';
+
+  // check the status code - check if you are responding to a user name
+  // or to a note request
   switch (xhr.status) {
     case 200:
       // success
-      content.innerHTML = '<b>Updated at ' + new Date().toLocaleTimeString() + '</b>';
+      content.innerHTML = "<b>Updated at " + new Date().toLocaleTimeString() + "</b>";
       break;
     case 201:
       // created
-      content.innerHTML = '<b>Note Created at ' + new Date().toLocaleTimeString() + '</b>';
+      if (login.style.display != 'none') {
+        content.innerHTML = '';
+        login.style.display = 'none';
+        login.disabled = true;
+      } else {
+        content.innerHTML = "<b>Note Created at " + new Date().toLocaleTimeString() + "</b>";
+      }
       break;
     case 204:
       // updated (no response back from server)
-      content.innerHTML = '<b>Saved at ' + new Date().toLocaleTimeString() + '</b>';
-      return;
+      if (login.style.display != 'none') {
+        content.style.color = 'red';
+        content.innerHTML = "<b>That name is already taken - try entering a different name.</b>";
+      } else {
+        content.innerHTML = "<b>Saved at " + new Date().toLocaleTimeString() + "</b>";
+      }
+      break;
     case 400:
       // bad request
+      content.style.color = 'red';
       content.innerHTML = '<b>Bad Request</b>';
       break;
     case 404:
       // not found
+      content.style.color = 'red';
       content.innerHTML = '<b>Resource Not Found</b>';
       break;
     default:
       // any other status code
+      content.style.color = 'red';
       content.innerHTML = 'Error code not implemented by client.';
       break;
   }
@@ -90,7 +117,7 @@ var handleResponse = function handleResponse(xhr, parseResponse) {
   }
 };
 
-// function to send our post request
+// function to send our post request to add a node to the server
 var sendNote = function sendNote(e) {
   var note = e.target.parentElement;
   // don't bother calling the server if the object is null
@@ -112,19 +139,16 @@ var sendNote = function sendNote(e) {
   // set the method (POST) and url (action field from form)
   xhr.open('post', '/addNote');
 
-  // set our request type to x-www-form-urlencoded
-  // which is one of the common types of form data.
-  // This type has the same format as query strings key=value&key2=value2
   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
   // set our requested response type in hopes of a JSON response
   xhr.setRequestHeader('Accept', 'application/json');
 
   // set our function to handle the response
   xhr.onload = function () {
-    return handleResponse(xhr, true);
+    return handleResponse(xhr, false);
   };
 
-  var formData = 'number=' + noteNumber + '&message=' + noteMessage.value + '&left=' + note.style.left + '&top=' + note.style.top + '&width=' + noteMessage.style.width + '&height=' + noteMessage.style.height + '&className=' + note.className;
+  var formData = "number=" + noteNumber + "&message=" + noteMessage.value + "&left=" + note.style.left + "&top=" + note.style.top + "&width=" + noteMessage.style.width + "&height=" + noteMessage.style.height + "&className=" + note.className + "&owner=" + userName;
 
   // send our request with the data
   xhr.send(formData);
@@ -136,27 +160,17 @@ var sendNote = function sendNote(e) {
   return false;
 };
 
-// function to send our post request
-var sendPost = function sendPost(e, nameForm) {
-  // grab the forms action (url to go to)
-  // and method (HTTP method - POST in this case)
+// function to send our request to add a new username
+var sendUserPost = function sendUserPost(e, nameForm, hiddenElement) {
   var nameAction = nameForm.getAttribute('action');
   var nameMethod = nameForm.getAttribute('method');
 
-  // grab the form's name and age fields so we can check user input
   var nameField = nameForm.querySelector('#nameField');
-  var ageField = nameForm.querySelector('#ageField');
 
-  // create a new Ajax request (remember this is asynchronous)
   var xhr = new XMLHttpRequest();
-  // set the method (POST) and url (action field from form)
   xhr.open(nameMethod, nameAction);
 
-  // set our request type to x-www-form-urlencoded
-  // which is one of the common types of form data.
-  // This type has the same format as query strings key=value&key2=value2
   xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-  // set our requested response type in hopes of a JSON response
   xhr.setRequestHeader('Accept', 'application/json');
 
   // set our function to handle the response
@@ -164,7 +178,8 @@ var sendPost = function sendPost(e, nameForm) {
     return handleResponse(xhr, true);
   };
 
-  var formData = 'name=' + nameField.value + '&age=' + ageField.value;
+  var formData = "userName=" + nameField.value;
+  userName = nameField.value;
 
   // send our request with the data
   xhr.send(formData);
@@ -175,8 +190,13 @@ var sendPost = function sendPost(e, nameForm) {
   return false;
 };
 
+// requests a note update depending on the filter requirements
 var getNotes = function getNotes(e) {
-  return requestUpdate(e, '/getNotes', 'get');
+  if (filterName != '') {
+    return requestUpdate(e, "/getNotes?owner=" + filterName, 'get');
+  } else {
+    return requestUpdate(e, '/getNotes', 'get');
+  }
 };
 
 // function to send request
@@ -205,6 +225,7 @@ var requestUpdate = function requestUpdate(e, url, type) {
   return false;
 };
 
+// set up all notes with the proper event handlers
 var hookupNotes = function hookupNotes() {
   stickyNotes = document.getElementsByClassName('stickyNote');
   var editors = document.getElementsByClassName('editor');
@@ -216,6 +237,14 @@ var hookupNotes = function hookupNotes() {
   }
 };
 
+// wipe all sticky notes from the client view
+var wipeBoard = function wipeBoard() {
+  var board = document.querySelector('#board');
+  board.innerHTML = '';
+  stickyNotes = [];
+};
+
+// return a random string value that corresponds to a sticky color pallete
 var getRandColor = function getRandColor() {
   var randColorNum = Math.floor(Math.random() * Math.floor(3));
   if (randColorNum === 0) {
@@ -228,19 +257,57 @@ var getRandColor = function getRandColor() {
 };
 
 var init = function init() {
+  // find all required form elements
   var newNoteButton = document.querySelector('#newNote');
+  var nameForm = document.querySelector('#nameForm');
+  var filterOwnerField = document.querySelector('#ownerField');
+  var filterCheck = document.querySelector('#filterCheck');
+  var loginSection = document.querySelector('#login');
 
-  // set up notes
+  // Set up notes
   hookupNotes();
 
-  // create handlers
+  // Create handlers
   var notesResponse = function notesResponse(e) {
     return getNotes(e);
   };
+  var addUser = function addUser(e) {
+    sendUserPost(e, nameForm, loginSection);
+  };
+  var filterResponse = function filterResponse(e) {
+    // check if the filter is checked on and update the filter
+    // name appropriately
+    if (filterCheck.checked === true) {
+      wipeBoard();
+      filterName = filterOwnerField.value;
+      if (filterName != userName) {
+        newNoteButton.disabled = true;
+      }
+    } else {
+      newNoteButton.disabled = false;
+      filterName = "";
+    }
+    getNotes(null);
+  };
+  var reloadFilter = function reloadFilter(e) {
+    // if the filter is enabled, wipe the board, change the name
+    // and reload automatically
+    if (filterCheck.checked) {
+      wipeBoard();
+      filterName = filterOwnerField.value;
+      if (filterName != userName) newNoteButton.disabled = true;
+      getNotes(null);
+    }
+  };
 
-  // attach submit events (for clicking submit or hitting enter)
+  // Attach events to new note button and beginning user input
+  nameForm.addEventListener('submit', addUser);
   newNoteButton.addEventListener('click', addNewNote);
   newNoteButton.addEventListener('click', notesResponse);
+  filterCheck.addEventListener('click', filterResponse);
+  filterOwnerField.addEventListener('change', reloadFilter);
+
+  // Choose a random color for the newNoteButton
   newNoteButton.className = getRandColor();
   notesResponse();
   setInterval(notesResponse, 10000);
@@ -248,7 +315,7 @@ var init = function init() {
 
 var addNewNote = function addNewNote(e) {
   var board = document.querySelector('#board');
-  var newNote = '<div class="stickyNote ' + e.target.className + '" id="note' + (document.getElementsByClassName('stickyNote').length + 1) + '"><div id="headernote' + (document.getElementsByClassName('stickyNote').length + 1) + '" class="header"></div><textarea class="editor" placeholder="Fill in your note..."></textarea></div>';
+  var newNote = "<div class=\"stickyNote " + e.target.className + "\" id=\"note" + (document.getElementsByClassName('stickyNote').length + 1) + "\"><div id=\"headernote" + (document.getElementsByClassName('stickyNote').length + 1) + "\" class=\"header\"></div><textarea class=\"editor\" placeholder=\"Fill in your note...\"></textarea></div>";
   board.innerHTML += newNote;
   hookupNotes();
 
@@ -277,8 +344,8 @@ function dragElement(element) {
       pos3 = e.clientX;
       pos4 = e.clientY;
       // set the element's new position:
-      element.style.top = element.offsetTop - pos2 + 'px';
-      element.style.left = element.offsetLeft - pos1 + 'px';
+      element.style.top = element.offsetTop - pos2 + "px";
+      element.style.left = element.offsetLeft - pos1 + "px";
     };
 
     var closeDragElement = function closeDragElement(e) {
@@ -293,9 +360,9 @@ function dragElement(element) {
 
     var pos1 = 0;var pos2 = 0;
     var pos3 = 0;var pos4 = 0;
-    if (document.getElementById('header' + element.id)) {
+    if (document.getElementById("header" + element.id)) {
       // if present, the header is where you move the DIV from:
-      document.getElementById('header' + element.id).onmousedown = dragMouseDown;
+      document.getElementById("header" + element.id).onmousedown = dragMouseDown;
     } else {
       // otherwise, move the DIV from anywhere inside the DIV:
       // element.onmousedown = dragMouseDown;

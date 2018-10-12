@@ -22,11 +22,29 @@ const handlePost = (request, response, parsedUrl) => {
 
     request.on('end', () => {
       const bodyString = Buffer.concat(body).toString();
-      console.dir(bodyString);
 
       const bodyParams = query.parse(bodyString);
 
       jsonHandler.addNote(request, response, bodyParams);
+    });
+  } else if (parsedUrl.pathname === '/addUser') {
+    const body = [];
+
+    request.on('error', (err) => {
+      console.dir(err);
+      response.statusCode = 400;
+      response.end();
+    });
+    request.on('data', (chunk) => {
+      body.push(chunk);
+    });
+
+    request.on('end', () => {
+      const bodyString = Buffer.concat(body).toString();
+
+      const bodyParams = query.parse(bodyString);
+
+      jsonHandler.addUser(request, response, bodyParams);
     });
   }
 };
@@ -42,10 +60,8 @@ const handleHead = (request, response, parsedUrl) => {
 
 // handle GET requests
 const handleGet = (request, response, parsedUrl) => {
-  console.log(parsedUrl);
   // grab any query parameters
   const params = query.parse(parsedUrl.query);
-  console.log(params);
 
   // route to correct method based on url
   if (parsedUrl.pathname === '/') {
@@ -57,9 +73,11 @@ const handleGet = (request, response, parsedUrl) => {
   } else if (parsedUrl.pathname === '/sticky.js') {
     htmlHandler.getSticky(request, response);
   } else if (parsedUrl.pathname === '/getNotes') {
-    jsonHandler.getNotes(request, response);
+    jsonHandler.getNotes(request, response, params);
   } else if (parsedUrl.pathname === '/getNote') {
     jsonHandler.getNote(request, response, params);
+  } else if (parsedUrl.pathname === '/getUsers') {
+    jsonHandler.getUsers(request, response);
   } else {
     jsonHandler.notReal(request, response);
   }
