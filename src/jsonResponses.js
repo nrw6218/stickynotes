@@ -12,6 +12,7 @@ const respondJSONMeta = (request, response, status) => {
   response.end();
 };
 
+// get all current users
 const getUsers = (request, response) => {
   if (request.method === 'GET') {
     // if it is a GET request
@@ -26,6 +27,8 @@ const getUsers = (request, response) => {
   }
 };
 
+// get a group of notes - either all notes on the server
+// or notes created by a specific user
 const getNotes = (request, response, queryParams) => {
   // if it is a GET request
   if (request.method === 'GET') {
@@ -80,6 +83,7 @@ const getNote = (request, response, queryParams) => {
   return respondJSON(request, response, responseCode, responseJSON);
 };
 
+// add a username
 const addUser = (request, response, body) => {
   const responseJSON = {
     message: 'Missing name.',
@@ -108,6 +112,7 @@ const addUser = (request, response, body) => {
   return respondJSONMeta(request, response, responseCode);
 };
 
+// add a single note
 const addNote = (request, response, body) => {
   const responseJSON = {
     message: 'invalid params',
@@ -143,6 +148,7 @@ const addNote = (request, response, body) => {
   return respondJSONMeta(request, response, responseCode);
 };
 
+// 404
 const notReal = (request, response) => {
   if (request.method === 'GET') {
     // if it is a GET request

@@ -64,6 +64,7 @@ const handleResponse = (xhr, parseResponse) => {
   const content = document.querySelector('#content');
   const board = document.querySelector('#board');
   const login = document.querySelector('#login');
+  const loginButton = login.querySelector('#nameSubmit');
 
   content.style.color = 'black';
 
@@ -77,7 +78,7 @@ const handleResponse = (xhr, parseResponse) => {
       if(login.style.display != 'none') {
         content.innerHTML = '';
         login.style.display = 'none';
-        login.disabled = true;
+        loginButton.disabled = true;
       } else {
         content.innerHTML = `<b>Note Created at ${new Date().toLocaleTimeString()}</b>`;
       }
